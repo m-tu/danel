@@ -1,2 +1,3 @@
 # danel
-Checkers game
+
+Checkers game in JS.
