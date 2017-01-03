@@ -1,5 +1,6 @@
-import {hello} from './meme';
+import Board from './Board';
 
 console.log("hello world!");
 
-let memes = 'real';
+let board = new Board();
+window.board = board;

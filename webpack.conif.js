@@ -4,7 +4,7 @@ const config = {
 	entry: './src/main.js',
 	output: {
 		path: path.resolve(__dirname, 'dist'),
-		filename: 'my-first-webpack.bundle.js'
+		filename: 'app.js'
 	},
 	module: {
 		rules: [
@@ -14,17 +14,3 @@ const config = {
 };
 
 module.exports = config;
-
-//
-// module: {
-// 	loaders: [
-// 		{
-// 			test: /\.js$/,
-// 			exclude: /(node_modules|bower_components)/,
-// 			loader: 'babel-loader',
-// 			query: {
-// 				presets: ['es2015']
-// 			}
-// 		}
-// 	]
-// }
