@@ -4,8 +4,6 @@ export default function Board() {
 }
 
 Board.prototype.create = function () {
-	console.log("create board");
-
 	let fragment = document.createDocumentFragment(),
 			container = document.getElementById('app');
 
@@ -19,12 +17,26 @@ Board.prototype.create = function () {
 			let div = document.createElement("div");
 			div.classList = 'cell';
 
-			this.cells[i][j] = {
+			if ((i + j) % 2 !== 0 && j < 3) {
+				div.classList += ' piece black'
+			}
+
+			if ((i + j) % 2 !== 0 && j > 4) {
+				div.classList += ' piece white'
+			}
+
+			let cell = {
 				x: i,
 				y: j,
 				filled: false,
 				el: div
 			};
+
+			this.cells[i][j] = cell;
+
+			div.addEventListener('click', function () {
+				div.classList.toggle('picked');
+			});
 
 			col.appendChild(div);
 		}
