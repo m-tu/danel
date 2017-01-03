@@ -11,6 +11,10 @@ Board.prototype.create = function () {
 
 	for (let i = 0; i < 8; i++) {
 		this.cells[i] = [];
+		let col = document.createElement("div");
+		col.classList = 'col';
+		fragment.appendChild(col);
+
 		for (let j = 0; j < 8; j++) {
 			let div = document.createElement("div");
 			div.classList = 'cell';
@@ -22,7 +26,7 @@ Board.prototype.create = function () {
 				el: div
 			};
 
-			fragment.appendChild(div);
+			col.appendChild(div);
 		}
 	}
 
