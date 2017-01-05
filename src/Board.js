@@ -17,13 +17,8 @@ Board.prototype.create = function () {
 			let div = document.createElement("div");
 			div.classList = 'cell';
 
-			if ((i + j) % 2 !== 0 && j < 3) {
-				div.classList += ' piece black'
-			}
-
-			if ((i + j) % 2 !== 0 && j > 4) {
-				div.classList += ' piece white'
-			}
+			div.dataset.i = i;
+			div.dataset.j = j;
 
 			let cell = {
 				x: i,
@@ -34,8 +29,27 @@ Board.prototype.create = function () {
 
 			this.cells[i][j] = cell;
 
-			div.addEventListener('click', function () {
-				div.classList.toggle('picked');
+			if ((i + j) % 2 !== 0 && j < 3) {
+				div.classList += ' piece black';
+				cell.piece = {
+					color: 'black',
+					type: 'peasant'
+				}
+			}
+
+			if ((i + j) % 2 !== 0 && j > 4) {
+				div.classList += ' piece white';
+				cell.piece = {
+					color: 'white',
+					type: 'peasant'
+				}
+			}
+
+			div.addEventListener('click',  (e) => {
+					const {i, j} = e.currentTarget.dataset;
+					console.log("click: ", i, j, typeof i);
+
+					let cell = this.cells[i][j];
 			});
 
 			col.appendChild(div);
