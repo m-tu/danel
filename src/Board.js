@@ -10,29 +10,29 @@ Board.prototype.create = function () {
 	let fragment = document.createDocumentFragment(),
 			container = document.getElementById('app');
 
-	for (let i = 0; i < 8; i++) {
-		this.cells[i] = [];
+	for (let x = 0; x < 8; x++) {
+		this.cells[x] = [];
 		let col = document.createElement("div");
 		col.classList = 'col';
 		fragment.appendChild(col);
 
-		for (let j = 0; j < 8; j++) {
+		for (let y = 0; y < 8; y++) {
 			let div = document.createElement("div");
 			div.classList = 'cell';
-
-			div.dataset.i = i;
-			div.dataset.j = j;
+			div.innerHTML = x + ' ' +y;
+			div.dataset.x = x;
+			div.dataset.y = y;
 
 			let cell = {
-				x: i,
-				y: j,
+				x: x,
+				y: y,
 				filled: false,
 				el: div
 			};
 
-			this.cells[i][j] = cell;
+			this.cells[x][y] = cell;
 
-			if ((i + j) % 2 !== 0 && j < 3) {
+			if ((x + y) % 2 !== 0 && y < 3) {
 				div.classList += ' piece black';
 				cell.piece = {
 					player: 2,
@@ -40,7 +40,7 @@ Board.prototype.create = function () {
 				}
 			}
 
-			if ((i + j) % 2 !== 0 && j > 4) {
+			if ((x + y) % 2 !== 0 && y > 4) {
 				div.classList += ' piece white';
 				cell.piece = {
 					player: 1,
@@ -48,11 +48,21 @@ Board.prototype.create = function () {
 				}
 			}
 
-			div.addEventListener('click',  (e) => {
-					const {i, j} = e.currentTarget.dataset;
-					console.log("click: ", i, j, typeof i);
+			function findPieceInBtw(p1, p2) {
+				let x,y;
+				if (p1.x < p2.x) {
+					x = p1.x + 1;
+				} else {
+					x = p1.x - 1;
+				}
+				y = p1.y + (p1.y < p2.y ? 1 : -1);
+				return this.cells[x][y];
+			}
 
-					let cell = this.cells[i][j];
+			div.addEventListener('click',  (e) => {
+					const {x, y} = e.currentTarget.dataset;
+
+					let cell = this.cells[x][y];
 
 					if (this.currentPiece == null && cell.piece && cell.piece.player == this.turn) {
 						this.currentPiece = Object.assign({}, cell.piece);
