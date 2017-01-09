@@ -2,4 +2,5 @@
 
 Checkers game in JS.
 
-get shrkekked siim
+To run:
+webpack --config webpack.conif.js --watch
