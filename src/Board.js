@@ -22,7 +22,7 @@ Board.prototype.create = function () {
 			let pieceDiv = document.createElement("div");
 
 			div.appendChild(pieceDiv);
-
+			pieceDiv.innerHTML += x + ' ' + y;
 			div.classList = 'cell';
 			div.dataset.x = x;
 			div.dataset.y = y;
@@ -62,10 +62,10 @@ Board.prototype.create = function () {
 
 			function removePiece(cell, turn) {
 				delete cell.piece;
-				var classesToRemove = ['piece', 'white', 'black'];
+				let classesToRemove = ['piece', 'white', 'black'];
 
 				if (turn != undefined) {
-					if(turn === 1) {
+					if (turn === 1) {
 						classesToRemove.splice(2, 1);
 					} else {
 						classesToRemove.splice(1, 1);
@@ -73,6 +73,19 @@ Board.prototype.create = function () {
 				}
 
 				cell.el.classList.remove.apply(cell.el.classList, classesToRemove);
+			}
+
+			function canPieceBeTaken(cell, cells) {
+				const {x, y} = cell;
+
+				const adjacentCells = [];
+
+				//TODO find adj. cells
+
+				adjacentCells.forEach((cell) => {
+					console.log("adj. cell: ", cell);
+				});
+
 			}
 
 			div.addEventListener('click', (e) => {
@@ -105,7 +118,12 @@ Board.prototype.create = function () {
 					this.currentPiece = null;
 					cell.el.classList.add('piece', this.turn == 1 ? 'white' : 'black');
 
-					if(!equal(cell, this.lastCell)) {
+					if(canPieceBeTaken(cell, this.cells)) {
+						//if there are more pieces that can be taken, don't end the turn
+						return;
+					}
+
+					if (!equal(cell, this.lastCell)) {
 						this.endTurn();
 					} else {
 						console.log('Piece was returned to its original location');
@@ -134,7 +152,7 @@ Board.prototype.endTurn = function () {
 
 function setCurrentTurnClass(turn) {
 	var board = document.getElementById('app').classList;
-	if(turn === 1) {
+	if (turn === 1) {
 		document.querySelector('#turn').innerHTML = 'WHITE';
 		board.remove('turn-black');
 		board.add('turn-white');
@@ -149,7 +167,7 @@ function equal(p1, p2) {
 	return p1.x === p2.x && p1.y === p2.y;
 }
 
-Board.prototype.findPieceInBtw = function(p1, p2) {
+Board.prototype.findPieceInBtw = function (p1, p2) {
 	let x, y;
 	if (p1.x < p2.x) {
 		x = p1.x + 1;
