@@ -22,7 +22,7 @@ Board.prototype.create = function () {
 			let pieceDiv = document.createElement("div");
 
 			div.appendChild(pieceDiv);
-			pieceDiv.innerHTML += x + ' ' + y;
+			// pieceDiv.innerHTML += x + ' ' + y;
 			div.classList = 'cell';
 			div.dataset.x = x;
 			div.dataset.y = y;
@@ -75,19 +75,6 @@ Board.prototype.create = function () {
 				cell.el.classList.remove.apply(cell.el.classList, classesToRemove);
 			}
 
-			function canPieceBeTaken(cell, cells) {
-				const {x, y} = cell;
-
-				const adjacentCells = [];
-
-				//TODO find adj. cells
-
-				adjacentCells.forEach((cell) => {
-					console.log("adj. cell: ", cell);
-				});
-
-			}
-
 			div.addEventListener('click', (e) => {
 				const {x, y} = e.currentTarget.dataset;
 
@@ -105,10 +92,12 @@ Board.prototype.create = function () {
 						return;
 					}
 
+					let pieceWasTaken = false;
 					if (distance(cell, this.lastCell) === 2) {
 						let cellInBtw = this.findPieceInBtw(this.lastCell, cell);
 						if (cellInBtw.piece) {
 							removePiece(cellInBtw);
+							pieceWasTaken = true;
 						} else {
 							console.error('Cannot remove piece because it does not exist')
 						}
@@ -118,7 +107,7 @@ Board.prototype.create = function () {
 					this.currentPiece = null;
 					cell.el.classList.add('piece', this.turn == 1 ? 'white' : 'black');
 
-					if(canPieceBeTaken(cell, this.cells)) {
+					if (pieceWasTaken && this.canPieceBeTaken(cell)) {
 						//if there are more pieces that can be taken, don't end the turn
 						return;
 					}
@@ -134,7 +123,6 @@ Board.prototype.create = function () {
 					removePiece(cell, this.turn);
 				}
 
-
 			});
 
 			col.appendChild(div);
@@ -148,6 +136,42 @@ Board.prototype.create = function () {
 Board.prototype.endTurn = function () {
 	this.turn = this.turn == 1 ? 2 : 1;
 	setCurrentTurnClass(this.turn);
+};
+
+
+Board.prototype.canPieceBeTaken = function(cell) {
+	let cells = this.cells;
+	const {x, y} = cell;
+
+	if (x - 2 >= 0 && y - 2 >= 0) {
+		let cell = cells[x - 1][y - 1];
+		if(cell.piece && cell.piece.player !== this.turn && !cells[x - 2][y - 2].piece) {
+			console.log("Cell can be taken: ", cell);
+			return true;
+		}
+	}
+
+	if (x + 2 <= 7 && y - 2 >= 0) {
+		let cell = cells[x + 1][y - 1];
+		if(cell.piece && cell.piece.player !== this.turn && !cells[x + 2][y - 2].piece) {
+			console.log("Cell can be taken: ", cell);
+			return true;
+		}
+	}
+	if (x - 2 >= 0 && y + 2 <= 7) {
+		let cell = cells[x - 1][y + 1];
+		if(cell.piece && cell.piece.player !== this.turn && !cells[x - 2][y + 2].piece) {
+			console.log("Cell can be taken: ", cell);
+			return true;
+		}
+	}
+	if (x + 2 <= 7 && y + 2 <= 7) {
+		let cell = cells[x + 1][y + 1];
+		if(cell.piece && cell.piece.player !== this.turn && !cells[x + 2][y + 2].piece) {
+			console.log("Cell can be taken: ", cell);
+			return true;
+		}
+	}
 };
 
 function setCurrentTurnClass(turn) {
