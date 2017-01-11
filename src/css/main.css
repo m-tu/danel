@@ -17,6 +17,10 @@
     margin: auto;
 }
 
+.piece.tamm {
+    border: 3px solid gray;
+}
+
 .black {
     background: black;
 }

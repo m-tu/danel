@@ -44,7 +44,7 @@ Board.prototype.create = function () {
 				pieceDiv.classList += ' piece black';
 				cell.piece = {
 					player: 2,
-					type: 'peasant'
+					type: 1
 				}
 			}
 
@@ -52,7 +52,7 @@ Board.prototype.create = function () {
 				pieceDiv.classList += ' piece white';
 				cell.piece = {
 					player: 1,
-					type: 'peasant'
+					type: 1
 				}
 			}
 
@@ -62,7 +62,7 @@ Board.prototype.create = function () {
 
 			function removePiece(cell, turn) {
 				delete cell.piece;
-				let classesToRemove = ['piece', 'white', 'black'];
+				let classesToRemove = ['piece', 'white', 'black', 'tamm'];
 
 				if (turn != undefined) {
 					if (turn === 1) {
@@ -104,8 +104,16 @@ Board.prototype.create = function () {
 					}
 
 					cell.piece = this.currentPiece;
+
+					if (cell.y === 0 && this.turn === 1 || cell.y === 7 && this.turn === 2) {
+						cell.piece.type = 2;
+					}
+
 					this.currentPiece = null;
 					cell.el.classList.add('piece', this.turn == 1 ? 'white' : 'black');
+					if(cell.piece.type == 2) {
+						cell.el.classList.add('tamm');
+					}
 
 					if (pieceWasTaken && this.canPieceBeTaken(cell)) {
 						//if there are more pieces that can be taken, don't end the turn
