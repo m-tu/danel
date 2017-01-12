@@ -22,7 +22,7 @@ Board.prototype.create = function () {
 			let pieceDiv = document.createElement("div");
 
 			div.appendChild(pieceDiv);
-			// pieceDiv.innerHTML += x + ' ' + y;
+			pieceDiv.innerHTML += 'x: ' + x + ' y: ' + y;
 			div.classList = 'cell';
 			div.dataset.x = x;
 			div.dataset.y = y;
@@ -93,14 +93,21 @@ Board.prototype.create = function () {
 					}
 
 					let pieceWasTaken = false;
-					if (distance(cell, this.lastCell) === 2) {
-						let cellInBtw = this.findPieceInBtw(this.lastCell, cell);
-						if (cellInBtw.piece) {
-							removePiece(cellInBtw);
+					const dist = distance(cell, this.lastCell);
+					if (dist === 2) {
+						let cellsInBtw = this.findPiecesInBtw(this.lastCell, cell);
+						console.log("cellsinbtw: ", cellsInBtw);
+						if (cellsInBtw[0].piece) {
+							removePiece(cellsInBtw[0]);
 							pieceWasTaken = true;
 						} else {
 							console.error('Cannot remove piece because it does not exist')
 						}
+					} else if (dist > 2) {
+						if (piece.type !== 2) {
+							return;
+						}
+
 					}
 
 					cell.piece = this.currentPiece;
@@ -111,7 +118,7 @@ Board.prototype.create = function () {
 
 					this.currentPiece = null;
 					cell.el.classList.add('piece', this.turn == 1 ? 'white' : 'black');
-					if(cell.piece.type == 2) {
+					if (cell.piece.type == 2) {
 						cell.el.classList.add('tamm');
 					}
 
@@ -147,13 +154,13 @@ Board.prototype.endTurn = function () {
 };
 
 
-Board.prototype.canPieceBeTaken = function(cell) {
+Board.prototype.canPieceBeTaken = function (cell) {
 	let cells = this.cells;
 	const {x, y} = cell;
 
 	if (x - 2 >= 0 && y - 2 >= 0) {
 		let cell = cells[x - 1][y - 1];
-		if(cell.piece && cell.piece.player !== this.turn && !cells[x - 2][y - 2].piece) {
+		if (cell.piece && cell.piece.player !== this.turn && !cells[x - 2][y - 2].piece) {
 			console.log("Cell can be taken: ", cell);
 			return true;
 		}
@@ -161,21 +168,21 @@ Board.prototype.canPieceBeTaken = function(cell) {
 
 	if (x + 2 <= 7 && y - 2 >= 0) {
 		let cell = cells[x + 1][y - 1];
-		if(cell.piece && cell.piece.player !== this.turn && !cells[x + 2][y - 2].piece) {
+		if (cell.piece && cell.piece.player !== this.turn && !cells[x + 2][y - 2].piece) {
 			console.log("Cell can be taken: ", cell);
 			return true;
 		}
 	}
 	if (x - 2 >= 0 && y + 2 <= 7) {
 		let cell = cells[x - 1][y + 1];
-		if(cell.piece && cell.piece.player !== this.turn && !cells[x - 2][y + 2].piece) {
+		if (cell.piece && cell.piece.player !== this.turn && !cells[x - 2][y + 2].piece) {
 			console.log("Cell can be taken: ", cell);
 			return true;
 		}
 	}
 	if (x + 2 <= 7 && y + 2 <= 7) {
 		let cell = cells[x + 1][y + 1];
-		if(cell.piece && cell.piece.player !== this.turn && !cells[x + 2][y + 2].piece) {
+		if (cell.piece && cell.piece.player !== this.turn && !cells[x + 2][y + 2].piece) {
 			console.log("Cell can be taken: ", cell);
 			return true;
 		}
@@ -199,16 +206,20 @@ function equal(p1, p2) {
 	return p1.x === p2.x && p1.y === p2.y;
 }
 
-Board.prototype.findPieceInBtw = function (p1, p2) {
-	let x, y;
-	if (p1.x < p2.x) {
-		x = p1.x + 1;
-	} else {
-		x = p1.x - 1;
+Board.prototype.findPiecesInBtw = function (p1, p2) {
+	let cellsWithPieces = [];
+	const distance = Math.abs(p1.y - p2.y);
+	let x, y, i;
+	const xDirection = p1.x < p2.x ? 1 : -1;
+	const yDirection = p1.y < p2.y ? 1 : -1;
+
+	for (x = p1.x + xDirection, y = p1.y + yDirection, i = 1; i < distance; i++, x += xDirection, y += yDirection) {
+		let cell = this.cells[x][y];
+		if (cell.piece) {
+			cellsWithPieces.push(cell);
+		}
 	}
-	y = p1.y + (p1.y < p2.y ? 1 : -1);
 
-	return this.cells[x][y];
+	return cellsWithPieces;
 };
-
 
