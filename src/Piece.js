@@ -1,8 +1,8 @@
-export default function Piece(x, y, type, player) {
+export default function Piece(x, y, player, type) {
 	this.x = x;
 	this.y = y;
-	this.type = type;
 	this.player = player;
+	this.type = type || 1;
 }
 
 Piece.prototype.distance = function (piece) {
