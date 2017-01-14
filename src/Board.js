@@ -78,7 +78,7 @@ function onClick(e) {
 				let cellsInBtw = this.findPiecesInBtw(this.lastCell, cell);
 				console.log("cellsinbtw: ", cellsInBtw);
 				if (cellsInBtw[0].piece) {
-					delete cell.piece;
+					delete cellsInBtw[0].piece;
 					removePiece(cellsInBtw[0]);
 					pieceWasTaken = true;
 				} else {
@@ -230,7 +230,6 @@ function setCurrentTurnClass(turn) {
 }
 
 function equal(p1, p2) {
-	debugger;
 	return p1.x === p2.x && p1.y === p2.y;
 }
 
