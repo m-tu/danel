@@ -8,9 +8,9 @@ export default function Board() {
 
 	this.create();
 	this.addPieces([
-		new Piece(5, 0, 1),
-		new Piece(4, 1, 2),
-		new Piece(1, 4, 2),
+		// new Piece(5, 0, 1, 1),
+		new Piece(3, 2, 1),
+		new Piece(5, 4, 2),
 	]);
 	this.redraw();
 }
@@ -27,7 +27,7 @@ Board.prototype.create = function () {
 
 		for (let y = 0; y < 8; y++) {
 			let div = document.createElement("div");
-			div.title = 'x: ' + x + ' y: ' + y;
+			div.innerHTML += 'x: ' + x + ' y: ' + y;
 
 			div.classList = 'cell';
 			div.dataset.x = x;
@@ -88,28 +88,30 @@ function onClick(e) {
 				console.error('Cannot remove piece because it does not exist')
 			}
 		} else if (dist > 2) {
-			const ownPieces = cellsInBtw.filter((cell) => {
-				return cell.piece && cell.piece.player === this.turn;
-			});
-
-			if (!ownPieces.length) {
-				//if there are no blocking own pieces see if there are double enemy pieces
-				const {xDir, yDir} = findMoveDirection(cell, this.lastCell);
-				const unCapturablePieces = cellsInBtw.filter((cell) => {
-					return this.cells[cell.x + xDir][cell.y + yDir].piece;
+			if (this.currentPiece.type === 2) {
+				const ownPieces = cellsInBtw.filter((cell) => {
+					return cell.piece && cell.piece.player === this.turn;
 				});
 
-				if (unCapturablePieces.length) {
-					console.error('Cannot take because of double pieces');
-					return;
+				if (!ownPieces.length) {
+					//if there are no blocking own pieces see if there are double enemy pieces
+					const {xDir, yDir} = findMoveDirection(cell, this.lastCell);
+					const unCapturablePieces = cellsInBtw.filter((cell) => {
+						return this.cells[cell.x + xDir][cell.y + yDir].piece;
+					});
+
+					if (unCapturablePieces.length) {
+						console.error('Cannot take because of double pieces');
+						return;
+					} else {
+						cellsInBtw.forEach((cell) => {
+							delete cell.piece;
+							removePiece(cell);
+						})
+					}
 				} else {
-					cellsInBtw.forEach((cell) => {
-						delete cell.piece;
-						removePiece(cell);
-					})
+					console.log('Player own pieces are blocking the capture');
 				}
-			} else {
-				console.log('Player own pieces are blocking the capture');
 			}
 		} else {
 			console.error('Something went wrong while getting cells in between pieces', cellsInBtw);
@@ -156,8 +158,9 @@ function addPiece(cell) {
 		pieceDiv.classList += ' piece black';
 	}
 	if (cell.piece.type == 2) {
-		cell.el.classList.add('tamm');
+		pieceDiv.classList.add('tamm');
 	}
+
 	cell.piece.el = pieceDiv;
 	cell.el.appendChild(pieceDiv);
 }
@@ -198,14 +201,44 @@ Board.prototype.addPieces = function (pieces) {
 Board.prototype.endTurn = function () {
 	this.turn = this.turn == 1 ? 2 : 1;
 	setCurrentTurnClass(this.turn);
+	areThereValidMoves();
 };
 
+function areThereValidMoves() {
+	//if not end game
+}
 
 Board.prototype.canPieceBeTaken = function (cell) {
 	let cells = this.cells;
 	const {x, y} = cell;
 
 	//TODO check for out of bounds first
+
+	if (this.currentPiece.type === 2) {
+		const directions = [
+			{xDir: 1, yDir: 1},
+			{xDir: 1, yDir: -1},
+			{xDir: -1, yDir: -1},
+			{xDir: -1, yDir: 1}
+		];
+
+		directions.forEach( (dir) => {
+
+			// for ( let i = 1; i < 7; i++) {
+			// 	let tmpX = x, tmpY = y;
+			// 	if(dir.xDir === 1 && tmpX <= 7) {
+			//
+			// 	}	else if(dir.xDir === -1) {
+			//
+			// 	} else {
+			// 		break;
+			// 	}
+			//
+			// }
+
+		});
+
+	}
 
 	// can simplify
 	if (x - 2 >= 0 && y - 2 >= 0) {
