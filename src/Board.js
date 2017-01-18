@@ -7,11 +7,7 @@ export default function Board() {
 	this.lastCell = null;
 
 	this.create();
-	this.addPieces([
-		// new Piece(5, 0, 1, 1),
-		new Piece(3, 2, 1),
-		new Piece(5, 4, 2),
-	]);
+	this.addPieces();
 	this.redraw();
 }
 
@@ -27,7 +23,7 @@ Board.prototype.create = function () {
 
 		for (let y = 0; y < 8; y++) {
 			let div = document.createElement("div");
-			div.innerHTML += 'x: ' + x + ' y: ' + y;
+			// div.innerHTML += 'x: ' + x + ' y: ' + y;
 
 			div.classList = 'cell';
 			div.dataset.x = x;
@@ -113,8 +109,6 @@ function onClick(e) {
 					console.log('Player own pieces are blocking the capture');
 				}
 			}
-		} else {
-			console.error('Something went wrong while getting cells in between pieces', cellsInBtw);
 		}
 
 		cell.piece = this.currentPiece;
@@ -213,31 +207,44 @@ Board.prototype.canPieceBeTaken = function (cell) {
 	const {x, y} = cell;
 
 	//TODO check for out of bounds first
+	//TODO combine for type 1 and 2
 
-	if (this.currentPiece.type === 2) {
+	if (cell.piece.type === 2) {
+		let a = x - y;
+		let b = y + x;
+
+		const p1 = a >= 0 ? {x: a, y: 0} : {x: 0, y: -a};
+		const p2 = b >= 7 ? {x: b - 7, y: 7} : {x: 0, y: b};
+		const p3 = {x: p2.y, y: p2.x};
+		const p4 = {x: 7 - p1.y, y: 7 - p1.x};
+
+		console.log("PS: ", p1, p2, p3, p4);
+
 		const directions = [
-			{xDir: 1, yDir: 1},
-			{xDir: 1, yDir: -1},
-			{xDir: -1, yDir: -1},
-			{xDir: -1, yDir: 1}
+			{xDir: -1, yDir: -1, lastCell: p1},
+			{xDir: -1, yDir: 1, lastCell: p2},
+			{xDir: 1, yDir: -1, lastCell: p3},
+			{xDir: 1, yDir: 1, lastCell: p4}
 		];
 
-		directions.forEach( (dir) => {
+		let canBeTaken = false;
+		directions.forEach( dir => {
+			let xC = x + dir.xDir, yC = y + dir.yDir, i = 0;
 
-			// for ( let i = 1; i < 7; i++) {
-			// 	let tmpX = x, tmpY = y;
-			// 	if(dir.xDir === 1 && tmpX <= 7) {
-			//
-			// 	}	else if(dir.xDir === -1) {
-			//
-			// 	} else {
-			// 		break;
-			// 	}
-			//
-			// }
-
+			const dist = distance(cell , dir.lastCell);
+			console.log("dir: ", dir);
+			for (;i < dist - 1; i++, xC += dir.xDir, yC += dir.yDir) {
+				console.log("x: %s, y: %s", xC, yC);
+				let next = this.cells[xC][yC];
+				if(next.piece && next.piece.player !== this.turn && !this.cells[xC + dir.xDir][yC + dir.yDir].piece) {
+					console.log("Can be taken: ", next);
+					canBeTaken = true;
+					break;
+				}
+			}
 		});
 
+		return canBeTaken;
 	}
 
 	// can simplify
