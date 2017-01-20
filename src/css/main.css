@@ -19,6 +19,10 @@
     margin: auto;
 }
 
+.highlight {
+    background: indianred !important;
+}
+
 .piece.tamm {
     border: 3px solid gray;
 }

@@ -72,6 +72,8 @@ function onClick(e) {
 			return;
 		}
 
+		this.lastCell.el.classList.remove('highlight');
+
 		let pieceWasTaken = false;
 		const dist = distance(cell, this.lastCell);
 		let cellsInBtw = this.findPiecesInBtw(this.lastCell, cell);
@@ -137,6 +139,8 @@ function onClick(e) {
 		delete cell.piece;
 
 		removePiece(cell);
+		//highlight home cell
+		cell.el.classList.add('highlight');
 	}
 }
 
