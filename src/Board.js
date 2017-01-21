@@ -54,6 +54,63 @@ function distance(p1, p2) {
 	return Math.abs(p1.y - p2.y);
 }
 
+function isOnTheSameDiagonal(cell, lastCell) {
+	return Math.abs(cell.x - lastCell.x) === Math.abs(cell.y - lastCell.y);
+}
+
+Board.prototype.validateMove = function(cell) {
+	let move = {
+		valid: true,
+		removedPieces: []
+	};
+
+	if (!isOnTheSameDiagonal(cell, this.lastCell)) {
+		console.log("Move not on the same diagonal");
+		return {valid: false};
+	}
+
+	const dist = distance(cell, this.lastCell);
+	let cellsInBtw = this.findPiecesInBtw(this.lastCell, cell);
+
+	if (dist === 2 && cellsInBtw.length === 1) {
+		if (cellsInBtw[0].piece) {
+			move.removedPieces.push(cellsInBtw[0]);
+		} else {
+			console.error('Cannot remove piece because it does not exist')
+		}
+	} else if (dist > 2 && this.currentPiece.type === 2) {
+		const ownPieces = cellsInBtw.filter(cell => {
+			return cell.piece && cell.piece.player === this.turn;
+		});
+
+		if (!ownPieces.length) {
+			//if there are no blocking own pieces see if there are double enemy pieces
+			const {xDir, yDir} = findMoveDirection(cell, this.lastCell);
+			const unCapturablePieces = cellsInBtw.filter((cell) => {
+				return this.cells[cell.x + xDir][cell.y + yDir].piece;
+			});
+
+			if (unCapturablePieces.length) {
+				console.error('Cannot take because of double pieces');
+				return;
+			} else {
+				cellsInBtw.forEach(cell => {
+					move.removedPieces.push(cell);
+				})
+			}
+		} else {
+			console.log('Player own pieces are blocking the capture');
+		}
+	} else if (dist === 1 || dist === 0) {
+		console.log("normal move");
+	} else {
+		console.log("Distance too long", dist);
+		move.valid = false;
+	}
+
+	return move;
+};
+
 function onClick(e) {
 
 	const {x, y} = e.currentTarget.dataset;
@@ -67,7 +124,7 @@ function onClick(e) {
 
 	if (this.currentPiece) {
 		if (cell.piece) {
-			console.error('Piece already present');
+			console.log('Piece already present');
 			return;
 		}
 
@@ -76,67 +133,39 @@ function onClick(e) {
 			return;
 		}
 
-		this.lastCell.el.classList.remove('highlight');
+		const move = this.validateMove(cell);
 
-		let pieceWasTaken = false;
-		const dist = distance(cell, this	.lastCell);
-		let cellsInBtw = this.findPiecesInBtw(this.lastCell, cell);
-		if (dist === 2 && cellsInBtw.length === 1) {
-			if (cellsInBtw[0].piece) {
-				delete cellsInBtw[0].piece;
-				removePiece(cellsInBtw[0]);
-				pieceWasTaken = true;
-			} else {
-				console.error('Cannot remove piece because it does not exist')
-			}
-		} else if (dist > 2) {
-			if (this.currentPiece.type === 2) {
-				const ownPieces = cellsInBtw.filter((cell) => {
-					return cell.piece && cell.piece.player === this.turn;
+		if (move.valid) {
+			if (move.removedPieces.length) {
+				move.removedPieces.forEach(cell => {
+					delete cell.piece;
+					removePiece(cell);
 				});
+			}
 
-				if (!ownPieces.length) {
-					//if there are no blocking own pieces see if there are double enemy pieces
-					const {xDir, yDir} = findMoveDirection(cell, this.lastCell);
-					const unCapturablePieces = cellsInBtw.filter((cell) => {
-						return this.cells[cell.x + xDir][cell.y + yDir].piece;
-					});
+			cell.piece = this.currentPiece;
 
-					if (unCapturablePieces.length) {
-						console.error('Cannot take because of double pieces');
-						return;
-					} else {
-						cellsInBtw.forEach((cell) => {
-							delete cell.piece;
-							removePiece(cell);
-						})
-					}
-				} else {
-					console.log('Player own pieces are blocking the capture');
-				}
+			if (cell.y === 0 && this.turn === 1 || cell.y === 7 && this.turn === 2) {
+				cell.piece.type = 2;
+			}
+
+			this.currentPiece = null;
+
+			addPiece(cell);
+			this.lastCell.el.classList.remove('highlight');
+
+			if (move.removedPieces.length && this.canPieceBeTaken(cell)) {
+				//if there are more pieces that can be taken, don't end the turn
+				return;
+			}
+
+			if (!equal(cell, this.lastCell)) {
+				this.endTurn();
+			} else {
+				console.log('Piece was returned to its original location');
 			}
 		}
 
-		cell.piece = this.currentPiece;
-
-		if (cell.y === 0 && this.turn === 1 || cell.y === 7 && this.turn === 2) {
-			cell.piece.type = 2;
-		}
-
-		this.currentPiece = null;
-
-		addPiece(cell);
-
-		if (pieceWasTaken && this.canPieceBeTaken(cell)) {
-			//if there are more pieces that can be taken, don't end the turn
-			return;
-		}
-
-		if (!equal(cell, this.lastCell)) {
-			this.endTurn();
-		} else {
-			console.log('Piece was returned to its original location');
-		}
 	} else {
 		this.currentPiece = Object.assign({}, cell.piece);
 		this.lastCell = cell;
@@ -236,15 +265,15 @@ Board.prototype.canPieceBeTaken = function (cell) {
 		];
 
 		let canBeTaken = false;
-		directions.forEach( dir => {
+		directions.forEach(dir => {
 			let xC = x + dir.xDir, yC = y + dir.yDir, i = 0;
 
-			const dist = distance(cell , dir.lastCell);
+			const dist = distance(cell, dir.lastCell);
 			console.log("dir: ", dir);
-			for (;i < dist - 1; i++, xC += dir.xDir, yC += dir.yDir) {
+			for (; i < dist - 1; i++, xC += dir.xDir, yC += dir.yDir) {
 				console.log("x: %s, y: %s", xC, yC);
 				let next = this.cells[xC][yC];
-				if(next.piece && next.piece.player !== this.turn && !this.cells[xC + dir.xDir][yC + dir.yDir].piece) {
+				if (next.piece && next.piece.player !== this.turn && !this.cells[xC + dir.xDir][yC + dir.yDir].piece) {
 					console.log("Can be taken: ", next);
 					canBeTaken = true;
 					break;
