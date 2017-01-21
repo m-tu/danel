@@ -23,7 +23,7 @@ Board.prototype.create = function () {
 
 		for (let y = 0; y < 8; y++) {
 			let div = document.createElement("div");
-			// div.innerHTML += 'x: ' + x + ' y: ' + y;
+			div.innerHTML += 'x: ' + x + ' y: ' + y;
 
 			div.classList = 'cell';
 			div.dataset.x = x;
@@ -57,10 +57,9 @@ function distance(p1, p2) {
 function onClick(e) {
 
 	const {x, y} = e.currentTarget.dataset;
-
 	let cell = this.cells[x][y];
 
-	if ((cell.piece && cell.piece.player != this.turn) || !this.currentPiece && !cell.piece) {
+	if (cell.piece && cell.piece.player != this.turn || !this.currentPiece && !cell.piece) {
 		//not your turn
 		console.log("Nothing");
 		return;
@@ -72,10 +71,15 @@ function onClick(e) {
 			return;
 		}
 
+		if ((cell.x + cell.y) % 2 === 0) {
+			console.log("pls");
+			return;
+		}
+
 		this.lastCell.el.classList.remove('highlight');
 
 		let pieceWasTaken = false;
-		const dist = distance(cell, this.lastCell);
+		const dist = distance(cell, this	.lastCell);
 		let cellsInBtw = this.findPiecesInBtw(this.lastCell, cell);
 		if (dist === 2 && cellsInBtw.length === 1) {
 			if (cellsInBtw[0].piece) {
