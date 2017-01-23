@@ -1,5 +1,13 @@
+body {
+    display: flex;
+}
+
 #app {
     display: flex;
+}
+
+#sidebar {
+
 }
 
 .cell {
