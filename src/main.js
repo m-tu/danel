@@ -23,7 +23,7 @@ socket.on('setup', function(msg){
 
 socket.on('newPlayer', function(players){
 	console.log("PLAYERS: ", players);
-	let playerList = document.getElementById('player-list')
+	let playerList = document.getElementById('player-list');
 	playerList.innerHTML = '';
 	if(players.length > 1) {
 		players.forEach( player => {
@@ -37,13 +37,33 @@ socket.on('newPlayer', function(players){
 	}
 });
 
+socket.on('askForGame', function(msg){
+	console.log("Is asking for game: ", msg);
+	let askGame = document.querySelector('#asking-for-game-name');
+	let name = document.querySelector('.name');
+
+	// name.innerHTML = msg.
+
+	askGame.classList.remove('hidden');
+
+});
+
 function askToPlay(e) {
 	console.log("ask to play: ", e.target.innerHTML);
+	socket.emit('askGame', {
+		to: e.target.innerHTML,
+		from: socket.id
+	});
+
 }
 
 socket.on('move', function(move){
 	console.log("move: ", move);
 });
+
+let accept = document.querySelector('#accept');
+let decline = document.querySelector('#decline');
+
 
 window.sokk = socket;
 let board = new Board();

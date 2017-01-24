@@ -18,17 +18,12 @@ io.on('connection', function(socket){
 	clients[socket.id] = { sokk: socket};
 
 	socket.on('disconnect', function(){
-		if (clients[socket.id]) {
-			delete clients[socket.id];
-			console.log("Disconnected client: ", socket.id);
-		} else {
-			console.log("ERROR: Could not disconnect client: ", socket.id);
-		}
+		console.log('user disconnected');
 	});
 
 	socket.on('setup', setup);
 	socket.on('move', move);
-	socket.on('startGame', startGame);
+	socket.on('askGame', askGame);
 
 	socket.emit('setup', {"hello": 'world'})
 });
@@ -37,7 +32,7 @@ function setup(msg) {
 	console.log("SETUP: ", msg);
 	if(msg.id && clients[msg.id]) {
 		clients[msg.id].player = msg.player;
-		clients[msg.id].status = 0; // 0 - idle 1 - in game
+		clients[msg.id].status = 0; // 0 - idle, 1 - in game, 3 - already negotiating
 		io.emit('newPlayer', getPlayers());
 	} else {
 		console.log("SEtup failed: ", msg);
@@ -49,12 +44,35 @@ function move(msg){
 	// io.emit('move', 'hello everybody');
 }
 
-function startGame(msg) {
-	if(msg.id) {
+function askGame(msg) {
+	if(msg.id && msg.to) {
+		let playerTo = findPlayerBy(msg.to);
+		if (playerTo !== null && playerTo.status === 0) {
+			playerTo.status = 3;
 
+			//ask for that player if he agrees
+			playerTo.sokk.emit('askForGame', {
+				player: playerTo.player,
+				id: playerTo.sokk.id
+			});
+
+		} else {
+			console.log("Player not available");
+			//TODO respond
+		}
 	} else {
 		console.log("Cannot start game, no id in msg: ", msg);
 	}
+}
+
+function findPlayerBy(name) {
+	let matching = clients.filter(client => {
+		if (client.player && client.player === name) {
+			return client;
+		}
+	});
+
+	return matching.length === 1 ? matching[0] : null;
 }
 
 function getPlayers() {
