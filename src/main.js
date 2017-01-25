@@ -37,15 +37,13 @@ socket.on('newPlayer', function(players){
 	}
 });
 
-socket.on('askForGame', function(msg){
+socket.on('askingForGame', function(msg){
 	console.log("Is asking for game: ", msg);
-	let askGame = document.querySelector('#asking-for-game-name');
+	let askGame = document.querySelector('#asking-for-game');
 	let name = document.querySelector('.name');
 
-	// name.innerHTML = msg.
-
+	name.innerHTML = msg.player;
 	askGame.classList.remove('hidden');
-
 });
 
 function askToPlay(e) {
@@ -54,7 +52,6 @@ function askToPlay(e) {
 		to: e.target.innerHTML,
 		from: socket.id
 	});
-
 }
 
 socket.on('move', function(move){
@@ -63,6 +60,11 @@ socket.on('move', function(move){
 
 let accept = document.querySelector('#accept');
 let decline = document.querySelector('#decline');
+
+accept.addEventListener('click', () => {
+	let askGame = document.querySelector('#asking-for-game');
+	askGame.classList.remove('hidden');
+});
 
 
 window.sokk = socket;

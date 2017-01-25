@@ -45,14 +45,15 @@ function move(msg){
 }
 
 function askGame(msg) {
-	if(msg.id && msg.to) {
+	console.log("Asking for game: ", msg);
+	if(msg.from && msg.to) {
 		let playerTo = findPlayerBy(msg.to);
 		if (playerTo !== null && playerTo.status === 0) {
 			playerTo.status = 3;
 
 			//ask for that player if he agrees
-			playerTo.sokk.emit('askForGame', {
-				player: playerTo.player,
+			playerTo.sokk.emit('askingForGame', {
+				player: clients[msg.from].player,
 				id: playerTo.sokk.id
 			});
 
@@ -66,13 +67,13 @@ function askGame(msg) {
 }
 
 function findPlayerBy(name) {
-	let matching = clients.filter(client => {
+	for (let id in clients) {
+		let client = clients[id];
 		if (client.player && client.player === name) {
 			return client;
 		}
-	});
-
-	return matching.length === 1 ? matching[0] : null;
+	}
+	return null;
 }
 
 function getPlayers() {
