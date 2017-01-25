@@ -63,10 +63,10 @@ let decline = document.querySelector('#decline');
 
 accept.addEventListener('click', () => {
 	let askGame = document.querySelector('#asking-for-game');
-	askGame.classList.remove('hidden');
+	askGame.classList.add('hidden');
 });
 
 
 window.sokk = socket;
-let board = new Board();
+// let board = new Board();
 

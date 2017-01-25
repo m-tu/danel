@@ -17,8 +17,13 @@ io.on('connection', function(socket){
 	console.log('a user connected: %s, nr: %s', socket.id, Object.keys(clients).length);
 	clients[socket.id] = { sokk: socket};
 
-	socket.on('disconnect', function(){
-		console.log('user disconnected');
+	socket.on('disconnect', function () {
+		if(clients[socket.id]) {
+			console.log("Removing client because of disconnect: ", socket.id);
+			delete clients[socket.id];
+		} else {
+			console.log("No client to remove");
+		}
 	});
 
 	socket.on('setup', setup);
