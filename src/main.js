@@ -37,12 +37,18 @@ socket.on('newPlayer', function(players){
 	}
 });
 
+let potentialOpponent = null;
+
 socket.on('askingForGame', function(msg){
 	console.log("Is asking for game: ", msg);
+	if(potentialOpponent === null) {
+		potentialOpponent = msg;
+	}
+
 	let askGame = document.querySelector('#asking-for-game');
 	let name = document.querySelector('.name');
 
-	name.innerHTML = msg.player;
+	name.innerHTML = msg.name;
 	askGame.classList.remove('hidden');
 });
 
@@ -58,13 +64,36 @@ socket.on('move', function(move){
 	console.log("move: ", move);
 });
 
+socket.on('gameStarted', function(startGame){
+	console.log("startGame: ", startGame);
+});
+
 let accept = document.querySelector('#accept');
 let decline = document.querySelector('#decline');
 
 accept.addEventListener('click', () => {
+	hideAskingForGame();
+	socket.emit('gameAcceptDecision', {
+		from: socket.id,
+		to: potentialOpponent.name,
+		decision: true
+	});
+});
+
+decline.addEventListener('click', () => {
+	hideAskingForGame();
+
+	socket.emit('gameAcceptDecision', {
+		from: socket.id,
+		to: potentialOpponent.name,
+		decision: false
+	});
+});
+
+function hideAskingForGame() {
 	let askGame = document.querySelector('#asking-for-game');
 	askGame.classList.add('hidden');
-});
+}
 
 
 window.sokk = socket;

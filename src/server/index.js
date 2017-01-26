@@ -29,6 +29,7 @@ io.on('connection', function(socket){
 	socket.on('setup', setup);
 	socket.on('move', move);
 	socket.on('askGame', askGame);
+	socket.on('gameAcceptDecision', gameAcceptDecision);
 
 	socket.emit('setup', {"hello": 'world'})
 });
@@ -58,8 +59,7 @@ function askGame(msg) {
 
 			//ask for that player if he agrees
 			playerTo.sokk.emit('askingForGame', {
-				player: clients[msg.from].player,
-				id: playerTo.sokk.id
+				name: clients[msg.from].player
 			});
 
 		} else {
@@ -69,6 +69,34 @@ function askGame(msg) {
 	} else {
 		console.log("Cannot start game, no id in msg: ", msg);
 	}
+}
+
+function gameAcceptDecision(msg) {
+	console.log("Player accepted game: ", msg);
+	let initiator = findPlayerBy(msg.to),
+		recipient = clients[msg.from];
+
+	console.log("%s asked %s for game. Acceptance status: %s", initiator.player, recipient.player, msg.decision);
+	if(msg.decision) {
+		console.log("Emitting start game msg");
+		initiator.status = 1;
+		recipient.status = 1;
+
+		let gameStarted = decideSides(initiator.player, recipient.player);
+		initiator.sokk.emit('gameStarted', gameStarted);
+		recipient.sokk.emit('gameStarted', gameStarted);
+	} else {
+		console.log("Game was declined, resetting <%s> status from <%s> to <%s>", initiator.sokk.id, initiator.status, 0);
+		initiator.status = 0;
+	}
+}
+
+function decideSides(player1, player2) {
+	const side = Math.random() < 0.5;
+	let info = {};
+	info[player1] = side ? 1 : 2;
+	info[player2] = side ? 2 : 1;
+	return info;
 }
 
 function findPlayerBy(name) {
