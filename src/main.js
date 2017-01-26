@@ -66,6 +66,7 @@ socket.on('move', function(move){
 
 socket.on('gameStarted', function(startGame){
 	console.log("startGame: ", startGame);
+	let board = new Board(startGame[userName]);
 });
 
 let accept = document.querySelector('#accept');
@@ -95,7 +96,4 @@ function hideAskingForGame() {
 	askGame.classList.add('hidden');
 }
 
-
-window.sokk = socket;
-// let board = new Board();
 

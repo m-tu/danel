@@ -1,7 +1,8 @@
 import Piece from './Piece';
 
-export default function Board() {
+export default function Board(player) {
 	this.cells = [];
+	this.player = player || 1;
 	this.turn = 1;
 	this.currentPiece = null;
 	this.lastCell = null;
@@ -112,6 +113,10 @@ Board.prototype.validateMove = function(cell) {
 };
 
 function onClick(e) {
+	if(this.turn !== this.player) {
+		console.log("not your turn");
+		return;
+	}
 
 	const {x, y} = e.currentTarget.dataset;
 	let cell = this.cells[x][y];
