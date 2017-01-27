@@ -1,11 +1,13 @@
 import Piece from './Piece';
 
-export default function Board(player) {
+export default function Board(player, cb) {
 	this.cells = [];
 	this.player = player || 1;
 	this.turn = 1;
 	this.currentPiece = null;
 	this.lastCell = null;
+
+	this.makeMove = cb;
 
 	this.create();
 	this.addPieces();
@@ -24,7 +26,7 @@ Board.prototype.create = function () {
 
 		for (let y = 0; y < 8; y++) {
 			let div = document.createElement("div");
-			div.innerHTML += 'x: ' + x + ' y: ' + y;
+			// div.innerHTML += 'x: ' + x + ' y: ' + y;
 
 			div.classList = 'cell';
 			div.dataset.x = x;
@@ -166,6 +168,7 @@ function onClick(e) {
 
 			if (!equal(cell, this.lastCell)) {
 				this.endTurn();
+				this.makeMove(this.cells);
 			} else {
 				console.log('Piece was returned to its original location');
 			}

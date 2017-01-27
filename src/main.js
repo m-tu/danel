@@ -64,9 +64,23 @@ socket.on('move', function(move){
 	console.log("move: ", move);
 });
 
+function makeMove(state) {
+	socket.emit('move', {
+		player: this.player,
+		state: this.cells
+	});
+}
+
+let opponent = null;
 socket.on('gameStarted', function(startGame){
 	console.log("startGame: ", startGame);
-	let board = new Board(startGame[userName]);
+	let board = new Board(startGame[userName], makeMove);
+
+	for(var i in startGame) {
+		if(startGame[i] !== userName) {
+			opponent = startGame[i];
+		}
+	}
 });
 
 let accept = document.querySelector('#accept');
