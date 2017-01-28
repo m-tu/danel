@@ -8,6 +8,7 @@ export default function Board(player, cb) {
 	this.lastCell = null;
 
 	this.makeMove = cb;
+	this.currentTurnMoves = [];
 
 	this.create();
 	this.addPieces();
@@ -143,6 +144,17 @@ function onClick(e) {
 		const move = this.validateMove(cell);
 
 		if (move.valid) {
+			this.currentTurnMoves.push({
+				from: {
+					x: this.lastCell.x,
+					y: this.lastCell.y
+				},
+				to: {
+					x: cell.x,
+					y: cell.y
+				}
+			});
+
 			if (move.removedPieces.length) {
 				move.removedPieces.forEach(cell => {
 					delete cell.piece;
@@ -168,7 +180,7 @@ function onClick(e) {
 
 			if (!equal(cell, this.lastCell)) {
 				this.endTurn();
-				this.makeMove(this.cells);
+				this.makeMove(this.currentTurnMoves);
 			} else {
 				console.log('Piece was returned to its original location');
 			}

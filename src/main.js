@@ -64,10 +64,11 @@ socket.on('move', function(move){
 	console.log("move: ", move);
 });
 
-function makeMove(state) {
+function makeMove(moves) {
+	console.log("This turn moves: ", moves);
 	socket.emit('move', {
-		player: this.player,
-		state: this.cells
+		player: userName,
+		state: moves
 	});
 }
 
