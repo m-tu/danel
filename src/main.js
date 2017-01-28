@@ -67,8 +67,8 @@ socket.on('move', function(move){
 function makeMove(moves) {
 	console.log("This turn moves: ", moves);
 	socket.emit('move', {
-		player: userName,
-		state: moves
+		to: opponent,
+		moves: moves
 	});
 }
 
@@ -78,8 +78,8 @@ socket.on('gameStarted', function(startGame){
 	let board = new Board(startGame[userName], makeMove);
 
 	for(var i in startGame) {
-		if(startGame[i] !== userName) {
-			opponent = startGame[i];
+		if(i !== userName) {
+			opponent = i;
 		}
 	}
 });

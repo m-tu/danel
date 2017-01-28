@@ -47,7 +47,11 @@ function setup(msg) {
 
 function move(msg){
 	console.log('move: ', msg);
-	// io.emit('move', 'hello everybody');
+	if(msg.to) {
+		console.log("Sending moves to: ", msg.to);
+		let to = findPlayerBy(msg.to);
+		to.sokk.emit('move', msg.moves);
+	}
 }
 
 function askGame(msg) {
