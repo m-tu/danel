@@ -62,19 +62,19 @@ function isOnTheSameDiagonal(cell, lastCell) {
 	return Math.abs(cell.x - lastCell.x) === Math.abs(cell.y - lastCell.y);
 }
 
-Board.prototype.validateMove = function(cell) {
+Board.prototype.validateMove = function(cell, lastCell) {
 	let move = {
 		valid: true,
 		removedPieces: []
 	};
 
-	if (!isOnTheSameDiagonal(cell, this.lastCell)) {
+	if (!isOnTheSameDiagonal(cell, lastCell)) {
 		console.log("Move not on the same diagonal");
 		return {valid: false};
 	}
 
-	const dist = distance(cell, this.lastCell);
-	let cellsInBtw = this.findPiecesInBtw(this.lastCell, cell);
+	const dist = distance(cell, lastCell);
+	let cellsInBtw = this.findPiecesInBtw(lastCell, cell);
 
 	if (dist === 2 && cellsInBtw.length === 1) {
 		if (cellsInBtw[0].piece) {
@@ -89,7 +89,7 @@ Board.prototype.validateMove = function(cell) {
 
 		if (!ownPieces.length) {
 			//if there are no blocking own pieces see if there are double enemy pieces
-			const {xDir, yDir} = findMoveDirection(cell, this.lastCell);
+			const {xDir, yDir} = findMoveDirection(cell, lastCell);
 			const unCapturablePieces = cellsInBtw.filter((cell) => {
 				return this.cells[cell.x + xDir][cell.y + yDir].piece;
 			});
@@ -141,7 +141,7 @@ function onClick(e) {
 			return;
 		}
 
-		const move = this.validateMove(cell);
+		const move = this.validateMove(cell, this.lastCell);
 
 		if (move.valid) {
 			this.currentTurnMoves.push({

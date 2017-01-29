@@ -62,6 +62,7 @@ function askToPlay(e) {
 
 socket.on('move', function(move){
 	console.log("move: ", move);
+	// board.validateMove()
 });
 
 function makeMove(moves) {
@@ -73,9 +74,11 @@ function makeMove(moves) {
 }
 
 let opponent = null;
+let board;
+
 socket.on('gameStarted', function(startGame){
 	console.log("startGame: ", startGame);
-	let board = new Board(startGame[userName], makeMove);
+	board = new Board(startGame[userName], makeMove);
 
 	for(var i in startGame) {
 		if(i !== userName) {
