@@ -60,9 +60,17 @@ function askToPlay(e) {
 	});
 }
 
-socket.on('move', function(move){
-	console.log("move: ", move);
-	// board.validateMove()
+socket.on('move', function(moves){
+	console.log("move: ", moves);
+	 let validMoves = moves.map(function (move) {
+		 return board.validateMove(move.to, move.from);
+	 });
+
+	if(validMoves.length === moves.length) {
+		validMoves.forEach(board.move);
+	} else {
+		console.log("Not all opponent moves were valid");
+	}
 });
 
 function makeMove(moves) {
@@ -79,8 +87,8 @@ let board;
 socket.on('gameStarted', function(startGame){
 	console.log("startGame: ", startGame);
 	board = new Board(startGame[userName], makeMove);
-
-	for(var i in startGame) {
+	window.board = board;
+	for(let i in startGame) {
 		if(i !== userName) {
 			opponent = i;
 		}

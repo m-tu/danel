@@ -7,7 +7,7 @@ export default function Board(player, cb) {
 	this.currentPiece = null;
 	this.lastCell = null;
 
-	this.makeMove = cb;
+	this.broadcastMoves = cb;
 	this.currentTurnMoves = [];
 
 	this.create();
@@ -65,6 +65,8 @@ function isOnTheSameDiagonal(cell, lastCell) {
 Board.prototype.validateMove = function(cell, lastCell) {
 	let move = {
 		valid: true,
+		from: lastCell,
+		to: cell,
 		removedPieces: []
 	};
 
@@ -115,6 +117,29 @@ Board.prototype.validateMove = function(cell, lastCell) {
 	return move;
 };
 
+Board.prototype.move = function (move, local) {
+	if (move.removedPieces.length) {
+		move.removedPieces.forEach(cell => {
+			delete cell.piece;
+			removePiece(cell);
+		});
+	}
+	let cell = this.cells[move.to.x][move.to.y];
+
+	if(local) {
+		cell.piece = this.currentPiece;
+		this.currentPiece = null;
+		this.lastCell.el.classList.remove('highlight');
+	}
+
+	if (cell.y === 0 && this.turn === 1 || cell.y === 7 && this.turn === 2) {
+		cell.piece.type = 2;
+	}
+
+
+	addPiece(cell);
+};
+
 function onClick(e) {
 	if(this.turn !== this.player) {
 		console.log("not your turn");
@@ -155,23 +180,7 @@ function onClick(e) {
 				}
 			});
 
-			if (move.removedPieces.length) {
-				move.removedPieces.forEach(cell => {
-					delete cell.piece;
-					removePiece(cell);
-				});
-			}
-
-			cell.piece = this.currentPiece;
-
-			if (cell.y === 0 && this.turn === 1 || cell.y === 7 && this.turn === 2) {
-				cell.piece.type = 2;
-			}
-
-			this.currentPiece = null;
-
-			addPiece(cell);
-			this.lastCell.el.classList.remove('highlight');
+			this.move(move, true);
 
 			if (move.removedPieces.length && this.canPieceBeTaken(cell)) {
 				//if there are more pieces that can be taken, don't end the turn
@@ -180,7 +189,7 @@ function onClick(e) {
 
 			if (!equal(cell, this.lastCell)) {
 				this.endTurn();
-				this.makeMove(this.currentTurnMoves);
+				this.broadcastMoves(this.currentTurnMoves);
 			} else {
 				console.log('Piece was returned to its original location');
 			}
