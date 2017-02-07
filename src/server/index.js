@@ -11,6 +11,25 @@ app.get('/', function(req, res){
 	res.sendFile(path.join(__dirname, '../../index.html'));
 });
 
+app.get('/api', function (req, res) {
+	console.log("API: ", req.query);
+	try {
+		let json = eval('(' + req.query.data + ')');
+		let name = req.query.name;
+		let event = req.query.event;
+
+		let client = findPlayerBy(name);
+		if (client) {
+			console.log("API emit: ", client.sokk.id, event, json);
+			client.sokk.emit(event, json);
+		}
+	} catch (e) {
+		console.log("error in api");
+	}
+
+	res.sendStatus(200);
+});
+
 let clients = {};
 
 io.on('connection', function(socket){

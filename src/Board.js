@@ -98,7 +98,7 @@ Board.prototype.validateMove = function(cell, lastCell) {
 
 			if (unCapturablePieces.length) {
 				console.error('Cannot take because of double pieces');
-				return;
+				return {valid: false};
 			} else {
 				cellsInBtw.forEach(cell => {
 					move.removedPieces.push(cell);
@@ -126,16 +126,13 @@ Board.prototype.move = function (move, local) {
 	}
 	let cell = this.cells[move.to.x][move.to.y];
 
-	if(local) {
-		cell.piece = this.currentPiece;
-		this.currentPiece = null;
-		this.lastCell.el.classList.remove('highlight');
-	}
+	cell.piece = this.currentPiece;
+	this.currentPiece = null;
+	this.lastCell.el.classList.remove('highlight');
 
 	if (cell.y === 0 && this.turn === 1 || cell.y === 7 && this.turn === 2) {
 		cell.piece.type = 2;
 	}
-
 
 	addPiece(cell);
 };
@@ -196,15 +193,24 @@ function onClick(e) {
 		}
 
 	} else {
-		this.currentPiece = Object.assign({}, cell.piece);
-		this.lastCell = cell;
-		delete cell.piece;
+		this.pickUpPiece(cell, true);
+	}
+}
 
-		removePiece(cell);
+Board.prototype.pickUpPiece = function (cell, local) {
+	if(!local) {
+		cell = this.cells[cell.x][cell.y];
+	}
+	this.currentPiece = Object.assign({}, cell.piece);
+	this.lastCell = cell;
+	delete cell.piece;
+
+	removePiece(cell);
+	if (local) {
 		//highlight home cell
 		cell.el.classList.add('highlight');
 	}
-}
+};
 
 function removePiece(cell) {
 	cell.el.innerHTML = '';

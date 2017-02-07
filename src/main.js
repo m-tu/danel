@@ -3,15 +3,18 @@ import css from './css/main.css';
 import io from './server/node_modules/socket.io-client';
 
 let socket = io();
-let userName;
+let userName = 'test';
 
-socket.on('setup', function(msg){
-	if(!userName) {
+window.socket = socket;
+window.Board = Board;
+
+socket.on('setup', function (msg) {
+	if (!userName) {
 		userName = window.prompt('Enter name');
 	}
 	console.log("name: ", userName, socket.id);
 
-	if(userName) {
+	if (userName) {
 		socket.emit('setup', {
 			player: userName,
 			id: socket.id || null
@@ -21,13 +24,13 @@ socket.on('setup', function(msg){
 	}
 });
 
-socket.on('newPlayer', function(players){
+socket.on('newPlayer', function (players) {
 	console.log("PLAYERS: ", players);
 	let playerList = document.getElementById('player-list');
 	playerList.innerHTML = '';
-	if(players.length > 1) {
-		players.forEach( player => {
-			if(player !== userName) {
+	if (players.length > 1) {
+		players.forEach(player => {
+			if (player !== userName) {
 				let li = document.createElement("div");
 				li.innerHTML = player;
 				li.addEventListener('click', askToPlay);
@@ -39,9 +42,9 @@ socket.on('newPlayer', function(players){
 
 let potentialOpponent = null;
 
-socket.on('askingForGame', function(msg){
+socket.on('askingForGame', function (msg) {
 	console.log("Is asking for game: ", msg);
-	if(potentialOpponent === null) {
+	if (potentialOpponent === null) {
 		potentialOpponent = msg;
 	}
 
@@ -60,40 +63,51 @@ function askToPlay(e) {
 	});
 }
 
-socket.on('move', function(moves){
+function onMoves(moves) {
 	console.log("move: ", moves);
-	 let validMoves = moves.map(function (move) {
-		 return board.validateMove(move.to, move.from);
-	 });
+	moves.forEach(move => {
+		const validation = board.validateMove(move.to, move.from);
+		if (validation.valid) {
+			console.log("move: ", validation.to, validation.from);
+			board.pickUpPiece(validation.from, false);
+			board.move(validation, false);
+		} else {
+			console.log("Opponent move not valid");
+		}
+	});
 
-	if(validMoves.length === moves.length) {
-		validMoves.forEach(board.move);
-	} else {
-		console.log("Not all opponent moves were valid");
-	}
-});
+	board.endTurn();
+}
+
+socket.on('move', onMoves);
 
 function makeMove(moves) {
 	console.log("This turn moves: ", moves);
-	socket.emit('move', {
-		to: opponent,
-		moves: moves
-	});
+	// socket.emit('move', {
+	// 	to: opponent,
+	// 	moves: moves
+	// });
 }
 
 let opponent = null;
 let board;
 
-socket.on('gameStarted', function(startGame){
+socket.on('gameStarted', function (startGame) {
 	console.log("startGame: ", startGame);
 	board = new Board(startGame[userName], makeMove);
 	window.board = board;
-	for(let i in startGame) {
-		if(i !== userName) {
+	for (let i in startGame) {
+		if (i !== userName) {
 			opponent = i;
 		}
 	}
 });
+
+let game = {
+	onMove: onMoves
+};
+
+window.game = game;
 
 let accept = document.querySelector('#accept');
 let decline = document.querySelector('#decline');
