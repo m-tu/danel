@@ -3,28 +3,68 @@ import css from './css/main.css';
 import io from './server/node_modules/socket.io-client';
 
 let socket = io();
-let userName = 'test';
+let userName = null;
+let potentialOpponent = null;
+let opponent = null;
+let board;
 
-window.socket = socket;
-window.Board = Board;
+var game = {
+	move: move,
+	setup: setup,
+	newPlayer: newPlayer,
+	askingForGame: askingForGame,
+	gameStarted: gameStarted
+};
 
-socket.on('setup', function (msg) {
-	if (!userName) {
-		userName = window.prompt('Enter name');
-	}
-	console.log("name: ", userName, socket.id);
+for(let action in game) {
+	socket.on(action, game[action]);
+}
 
-	if (userName) {
-		socket.emit('setup', {
-			player: userName,
-			id: socket.id || null
-		});
-	} else {
-		window.alert('No name entered -  playing single player');
-	}
+let accept = document.querySelector('#accept');
+let decline = document.querySelector('#decline');
+
+accept.addEventListener('click', () => {
+	acceptGame(true)
 });
 
-socket.on('newPlayer', function (players) {
+decline.addEventListener('click', () => {
+	acceptGame(false)
+});
+
+var game = {
+	move: move,
+	setup: setup,
+	newPlayer: newPlayer,
+	askingForGame: askingForGame,
+	gameStarted: gameStarted
+};
+
+function gameStarted(startGame) {
+	console.log("startGame: ", startGame);
+	board = new Board(startGame[userName], makeMove);
+	window.board = board;
+	for (let i in startGame) {
+		if (i !== userName) {
+			opponent = i;
+		}
+	}
+}
+
+
+function askingForGame(msg) {
+	console.log("Is asking for game: ", msg);
+	if (potentialOpponent === null) {
+		potentialOpponent = msg;
+	}
+
+	let askGame = document.querySelector('#asking-for-game');
+	let name = document.querySelector('.name');
+
+	name.innerHTML = msg.name;
+	askGame.classList.remove('hidden');
+}
+
+function newPlayer(players) {
 	console.log("PLAYERS: ", players);
 	let playerList = document.getElementById('player-list');
 	playerList.innerHTML = '';
@@ -38,22 +78,31 @@ socket.on('newPlayer', function (players) {
 			}
 		});
 	}
-});
+}
 
-let potentialOpponent = null;
-
-socket.on('askingForGame', function (msg) {
-	console.log("Is asking for game: ", msg);
-	if (potentialOpponent === null) {
-		potentialOpponent = msg;
+function setup(msg) {
+	if (!userName) {
+		userName = window.prompt('Enter name');
 	}
+	console.log("name: ", userName, socket.id);
 
-	let askGame = document.querySelector('#asking-for-game');
-	let name = document.querySelector('.name');
+	if (userName) {
+		socket.emit('setup', {
+			player: userName,
+			id: socket.id || null
+		});
+	} else {
+		window.alert('No name entered -  playing single player');
+	}
+}
 
-	name.innerHTML = msg.name;
-	askGame.classList.remove('hidden');
-});
+function makeMove(moves) {
+	console.log("This turn moves: ", moves);
+	socket.emit('move', {
+		to: opponent,
+		moves: moves
+	});
+}
 
 function askToPlay(e) {
 	console.log("ask to play: ", e.target.innerHTML);
@@ -63,7 +112,7 @@ function askToPlay(e) {
 	});
 }
 
-function onMoves(moves) {
+function move(moves) {
 	console.log("move: ", moves);
 	moves.forEach(move => {
 		const validation = board.validateMove(move.to, move.from);
@@ -79,57 +128,15 @@ function onMoves(moves) {
 	board.endTurn();
 }
 
-socket.on('move', onMoves);
+function acceptGame(decision) {
+	hideAskingForGame();
 
-function makeMove(moves) {
-	console.log("This turn moves: ", moves);
-	// socket.emit('move', {
-	// 	to: opponent,
-	// 	moves: moves
-	// });
+	socket.emit('gameAcceptDecision', {
+		from: socket.id,
+		to: potentialOpponent.name,
+		decision: decision
+	});
 }
-
-let opponent = null;
-let board;
-
-socket.on('gameStarted', function (startGame) {
-	console.log("startGame: ", startGame);
-	board = new Board(startGame[userName], makeMove);
-	window.board = board;
-	for (let i in startGame) {
-		if (i !== userName) {
-			opponent = i;
-		}
-	}
-});
-
-let game = {
-	onMove: onMoves
-};
-
-window.game = game;
-
-let accept = document.querySelector('#accept');
-let decline = document.querySelector('#decline');
-
-accept.addEventListener('click', () => {
-	hideAskingForGame();
-	socket.emit('gameAcceptDecision', {
-		from: socket.id,
-		to: potentialOpponent.name,
-		decision: true
-	});
-});
-
-decline.addEventListener('click', () => {
-	hideAskingForGame();
-
-	socket.emit('gameAcceptDecision', {
-		from: socket.id,
-		to: potentialOpponent.name,
-		decision: false
-	});
-});
 
 function hideAskingForGame() {
 	let askGame = document.querySelector('#asking-for-game');

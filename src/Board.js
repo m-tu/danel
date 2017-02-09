@@ -187,6 +187,7 @@ function onClick(e) {
 			if (!equal(cell, this.lastCell)) {
 				this.endTurn();
 				this.broadcastMoves(this.currentTurnMoves);
+				this.currentTurnMoves = [];
 			} else {
 				console.log('Piece was returned to its original location');
 			}
